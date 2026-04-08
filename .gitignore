@@ -1,0 +1,19 @@
+# System Files
+.DS_Store
+Thumbs.db
+
+# Workspace / IDE Files
+.vscode/
+.idea/
+*.swp
+*.sublime-project
+*.sublime-workspace
+
+# App Data (Antigravity)
+.gemini/
+brain/
+knowledge/
+
+# Dependencies (if any)
+node_modules/
+package-lock.json
