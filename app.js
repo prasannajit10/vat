@@ -28,6 +28,14 @@
             reports: 0,
         },
         history: [],
+        safetyMode: "strict", // 'strict' (localhost only) or 'sandbox' (authorized labs)
+        sandboxDomains: [
+            "altoro.testfire.net",
+            "demo.testfire.net",
+            "juice-shop.herokuapp.com",
+            "crackme.cmltd.76",
+            "zero.webappsecurity.com"
+        ],
     };
 
     // ========== DOM REFS ==========
@@ -40,11 +48,45 @@
             const parsed = new URL(url);
             const hostname = parsed.hostname.toLowerCase();
             const allowed = ["localhost", "127.0.0.1", "[::1]"];
+
+            if (state.safetyMode === "sandbox") {
+                return allowed.includes(hostname) || state.sandboxDomains.includes(hostname);
+            }
             return allowed.includes(hostname);
         } catch (e) {
             return false;
         }
     }
+
+    // Initialize Safety Toggle
+    document.addEventListener("DOMContentLoaded", () => {
+        const safetyToggle = $("#safetyToggle");
+        const sandboxWrap = $(".sandbox-mode-toggle");
+        const sandboxStatus = $("#sandboxStatus");
+
+        if (safetyToggle) {
+            safetyToggle.addEventListener("change", (e) => {
+                const isSandbox = e.target.checked;
+                state.safetyMode = isSandbox ? "sandbox" : "strict";
+
+                if (isSandbox) {
+                    sandboxWrap?.classList.add("active");
+                    if (sandboxStatus) {
+                        sandboxStatus.textContent = "Sandbox";
+                        sandboxStatus.style.color = "var(--accent-primary)";
+                    }
+                    showToast("warning", "Sandbox Mode Active", "Authorized educational domains are now permitted.");
+                } else {
+                    sandboxWrap?.classList.remove("active");
+                    if (sandboxStatus) {
+                        sandboxStatus.textContent = "Strict";
+                        sandboxStatus.style.color = "#f59e0b";
+                    }
+                    showToast("info", "Safe Mode Restored", "Scanning restricted to localhost only.");
+                }
+            });
+        }
+    });
 
     const sidebar = $("#sidebar");
     const mainContent = $("#mainContent");
@@ -371,7 +413,14 @@
                 return;
             }
             if (!isTargetAuthorized(url)) {
-                showToast("error", "Unauthorized Target", "Scanning is restricted to localhost/127.0.0.1 for safety.");
+                let isSandbox = false;
+                try { isSandbox = state.sandboxDomains.includes(new URL(url).hostname.toLowerCase()); } catch(e) {}
+                
+                if (isSandbox) {
+                    showToast("warning", "Sandbox Target", "This lab target requires Sandbox Mode. Toggle it ON in the top banner.");
+                } else {
+                    showToast("error", "Unauthorized Target", "Scanning is restricted to localhost/authorized labs for safety.");
+                }
                 return;
             }
             if (state.scanning) {
@@ -389,6 +438,7 @@
                 postData: $("#sqliPostBody")?.value || "",
                 level: $("#sqliLevel").value,
                 customPayloads: $("#sqliCustomPayloads").value,
+                safetyMode: state.safetyMode,
             };
 
             addToFeed("info", `SQLi scan started on ${url}`);
@@ -446,7 +496,14 @@
                 return;
             }
             if (!isTargetAuthorized(url)) {
-                showToast("error", "Unauthorized Target", "Scanning is restricted to localhost/127.0.0.1 for safety.");
+                let isSandbox = false;
+                try { isSandbox = state.sandboxDomains.includes(new URL(url).hostname.toLowerCase()); } catch(e) {}
+                
+                if (isSandbox) {
+                    showToast("warning", "Sandbox Target", "Enable Sandbox Mode in the top banner to test this authorized lab.");
+                } else {
+                    showToast("error", "Unauthorized Target", "Scanning restricted to localhost/authorized labs for safety.");
+                }
                 return;
             }
             if (!param) {
@@ -467,6 +524,7 @@
                 param,
                 type: $("#xssType").value,
                 customPayloads: $("#xssCustomPayloads").value,
+                safetyMode: state.safetyMode,
             };
 
             addToFeed("info", `XSS scan started on ${url} (param: ${param})`);
@@ -521,7 +579,14 @@
                 return;
             }
             if (!isTargetAuthorized(url)) {
-                showToast("error", "Unauthorized Target", "Scanning is restricted to localhost/127.0.0.1 for safety.");
+                let isSandbox = false;
+                try { isSandbox = state.sandboxDomains.includes(new URL(url).hostname.toLowerCase()); } catch(e) {}
+                
+                if (isSandbox) {
+                    showToast("warning", "Sandbox Target", "Enable Sandbox Mode to test credentials against this lab.");
+                } else {
+                    showToast("error", "Unauthorized Target", "Brute-force testing restricted to authorized targets.");
+                }
                 return;
             }
             if (state.scanning) {
@@ -540,6 +605,7 @@
                 usernames: $("#bfUsernames").value,
                 passwords: $("#bfPasswords").value,
                 failText: $("#bfFailText").value,
+                safetyMode: state.safetyMode,
             };
 
             addToFeed("info", `Brute-force test started on ${url}`);

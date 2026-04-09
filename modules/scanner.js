@@ -169,8 +169,11 @@ const ScannerModule = (() => {
         progressEl.style.display = "flex";
 
         addLine(outputEl, "info", "[SCAN]", `Starting functional SQL Injection scan on: ${url}`);
-        addLine(outputEl, "info", "[INFO]", `Checking localhost restriction (Safe Mode Active)`);
+        addLine(outputEl, "info", "[INFO]", `Checking target authorization (Safe Mode: ${config.safetyMode || 'Strict'})`);
         addLine(outputEl, "system", "[SYS]", "─".repeat(60));
+
+        addInsight(outputEl, "Methodology", "SQL Injection occurs when untrusted data is sent to an interpreter as part of a command or query.");
+
 
         // Baseline request
         addLine(outputEl, "system", "[INIT]", "Fetching baseline response...");
@@ -181,9 +184,9 @@ const ScannerModule = (() => {
             const text = await resp.text();
             baseline = { status: resp.status, length: text.length, time: Date.now() - start };
             addLine(outputEl, "system", "[BASE]", `Status: ${baseline.status} | Length: ${baseline.length} chars`);
+            addInsight(outputEl, "Baselines", "Establishing a baseline help us detect 'Blind' vulnerabilities by comparing response changes in timing or length.");
         } catch (e) {
             addLine(outputEl, "error", "[ERR]", `Baseline failed: ${e.message}. Testing might be blocked by CORS.`);
-            // Continue anyway or return? User wants capture status codes/errors.
         }
 
         for (let i = 0; i < payloads.length; i++) {
@@ -209,8 +212,12 @@ const ScannerModule = (() => {
                 const text = await resp.text();
                 const timeTaken = Date.now() - start;
 
-                // Detection Logic
                 const findings = analyzeSQLiResponse(text, resp.status, timeTaken, baseline, payload);
+
+                if (i === 4) {
+                    addInsight(outputEl, "Error Vectors", "We look for database driver errors in the HTML. These disclose the database type and even the query structure.");
+                }
+
 
                 if (findings.length > 0) {
                     findings.forEach(vuln => {
@@ -291,6 +298,7 @@ const ScannerModule = (() => {
         progressEl.style.display = "flex";
 
         addLine(outputEl, "info", "[SCAN]", `Starting functional XSS scan on: ${url}`);
+        addInsight(outputEl, "Reflection", "We test if our input is reflected back in the page without proper encoding. This is the root cause of Reflected XSS.");
         addLine(outputEl, "system", "[SYS]", "─".repeat(60));
 
         for (let i = 0; i < payloads.length; i++) {
@@ -299,6 +307,11 @@ const ScannerModule = (() => {
             const pct = Math.round(((i + 1) / payloads.length) * 100);
             fillEl.style.width = pct + "%";
             textEl.textContent = pct + "%";
+
+            if (i === 3) {
+                addInsight(outputEl, "Sanitization", "Filtered output (e.g., stripping '<script>') doesn't always prevent XSS. We try bypasses like '<img>' or 'svg' handlers.");
+            }
+
 
             await sleep(500); // Throttling
 
@@ -334,11 +347,18 @@ const ScannerModule = (() => {
         return results;
     }
 
-    // Utility functions
     function addLine(container, type, time, msg) {
         const line = document.createElement("div");
         line.className = `terminal-line ${type}`;
         line.innerHTML = `<span class="time">${time}</span><span class="msg">${msg}</span>`;
+        container.appendChild(line);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function addInsight(container, title, msg) {
+        const line = document.createElement("div");
+        line.className = `terminal-line info insight-line`;
+        line.innerHTML = `<span class="time">[EDU]</span><span class="msg"><strong>${title}:</strong> ${msg}</span>`;
         container.appendChild(line);
         container.scrollTop = container.scrollHeight;
     }
@@ -365,6 +385,7 @@ const ScannerModule = (() => {
         runSQLiScan,
         runXSSScan,
         addLine,
+        addInsight,
         sleep,
         randomInt,
         truncate,

@@ -24,8 +24,18 @@
     <!-- Educational Warning Banner -->
     <div class="edu-banner">
         <div class="edu-banner-content">
-            <i class="fas fa-university"></i>
-            <span><strong>EDUCATIONAL USE ONLY:</strong> This tool is designed for testing locally hosted, authorized applications only. targeting unauthorized systems is strictly prohibited.</span>
+            <div class="edu-banner-main">
+                <i class="fas fa-university"></i>
+                <span><strong>EDUCATIONAL USE ONLY:</strong> Testing authorized applications only.</span>
+            </div>
+            <div class="sandbox-mode-toggle">
+                <span class="sandbox-label"><i class="fas fa-flask"></i> Sandbox Mode</span>
+                <label class="cyber-switch">
+                    <input type="checkbox" id="safetyToggle">
+                    <span class="cyber-slider"></span>
+                </label>
+                <div class="sandbox-status" id="sandboxStatus">Strict</div>
+            </div>
         </div>
     </div>
 
