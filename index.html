@@ -2164,6 +2164,30 @@ Server: java.lang.OutOfMemoryError â†’ full stack trace + internal paths
         </div>
     </div>
 
+    <!-- ===== LEGAL AGREEMENT MODAL ===== -->
+    <div class="auth-overlay" id="legalOverlay" style="display:flex; z-index: 9999;">
+        <div class="auth-modal" style="max-width: 500px; text-align: left;">
+            <div class="auth-logo" style="margin-bottom: 1rem; text-align: center;">
+                <i class="fas fa-balance-scale" style="font-size: 3rem; color: #ef4444; margin-bottom: 10px;"></i>
+                <h1 style="color: #ef4444; font-size: 1.5rem;">Legal Disclaimer & Terms of Use</h1>
+            </div>
+            <div style="font-size: 0.9rem; color: #a1a1aa; line-height: 1.5; margin-bottom: 1.5rem;">
+                <p style="margin-bottom: 10px;"><strong>WARNING:</strong> NexPent is an educational tool designed strictly for learning and authorized testing purposes.</p>
+                <p style="margin-bottom: 10px;">By using this software, you agree to the following:</p>
+                <ul style="padding-left: 20px; margin-bottom: 10px;">
+                    <li style="margin-bottom: 5px;">You will only use this tool against targets you own or have explicit, written permission to test (e.g., localhost, authorized sandboxes).</li>
+                    <li style="margin-bottom: 5px;">Any illegal use, unauthorized access, or malicious activity is strictly prohibited.</li>
+                    <li style="margin-bottom: 5px;">The authors are NOT responsible for any misuse, damage, or legal consequences caused by your actions.</li>
+                </ul>
+                <p>This software does not collect telemetry, and all operations are performed locally on your machine.</p>
+            </div>
+            <div style="display:flex;gap:.75rem;">
+                <button type="button" class="auth-submit" style="background:var(--bg-elevated);flex:1" id="legalDeclineBtn">I Decline</button>
+                <button type="button" class="auth-submit" style="background:#ef4444;flex:2" id="legalAcceptBtn"><i class="fas fa-check-circle"></i> I Agree & Understand</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="modules/scanner.js"></script>
     <script src="modules/bruteforce.js"></script>

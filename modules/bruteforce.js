@@ -165,34 +165,3 @@ const BruteForceModule = (() => {
     return { runBruteForce };
 })();
 
-    function isWeakPassword(pass) {
-        const weakPatterns = [
-            /^(password|123456|admin|root|qwerty|letmein|welcome|monkey|master|dragon)$/i,
-            /^(.)\1+$/, // All same characters
-            /^[0-9]{1,6}$/, // Short numeric only
-            /^[a-z]{1,5}$/i, // Short alpha only
-        ];
-        return pass.length < 8 || weakPatterns.some((p) => p.test(pass));
-    }
-
-    function getWeakReason(pass) {
-        if (pass.length < 8) return "Too short (< 8 characters)";
-        if (/^[0-9]+$/.test(pass)) return "Numeric only";
-        if (/^[a-z]+$/i.test(pass)) return "No numbers or special characters";
-        if (/^(password|123456|admin|root|qwerty|letmein)$/i.test(pass)) return "Common dictionary word";
-        return "Weak pattern detected";
-    }
-
-    function addLine(container, type, time, msg) {
-        const line = document.createElement("div");
-        line.className = `terminal-line ${type}`;
-        line.innerHTML = `<span class="time">${time}</span><span class="msg">${msg}</span>`;
-        container.appendChild(line);
-        container.scrollTop = container.scrollHeight;
-    }
-
-    function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
-    function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
-
-    return { runBruteForce };
-})();

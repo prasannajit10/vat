@@ -58,8 +58,32 @@
         }
     }
 
-    // Initialize Safety Toggle
+    // Initialize Safety Toggle & Legal Agreement
     document.addEventListener("DOMContentLoaded", () => {
+        const legalOverlay = $("#legalOverlay");
+        const legalAcceptBtn = $("#legalAcceptBtn");
+        const legalDeclineBtn = $("#legalDeclineBtn");
+
+        if (!localStorage.getItem("nexpent_legal_accepted")) {
+            if (legalOverlay) legalOverlay.style.display = "flex";
+        } else {
+            if (legalOverlay) legalOverlay.style.display = "none";
+        }
+
+        if (legalAcceptBtn) {
+            legalAcceptBtn.addEventListener("click", () => {
+                localStorage.setItem("nexpent_legal_accepted", "true");
+                legalOverlay.style.display = "none";
+                showToast("success", "Terms Accepted", "Welcome to NexPent Educational Scanner.");
+            });
+        }
+
+        if (legalDeclineBtn) {
+            legalDeclineBtn.addEventListener("click", () => {
+                document.body.innerHTML = "<h1 style='color:white; text-align:center; margin-top:20vh; font-family: monospace;'>Access Denied. You must accept the terms of use to access this educational tool.</h1>";
+            });
+        }
+
         const safetyToggle = $("#safetyToggle");
         const sandboxWrap = $(".sandbox-mode-toggle");
         const sandboxStatus = $("#sandboxStatus");
