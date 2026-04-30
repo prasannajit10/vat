@@ -160,6 +160,22 @@ const ScannerModule = (() => {
         return payloads;
     }
 
+    // Helper to bypass CORS using our backend proxy
+    async function proxyFetch(url, options = {}) {
+        const proxyBody = JSON.stringify({
+            url: url,
+            method: options.method || "GET",
+            headers: options.headers || {},
+            body: options.body || null
+        });
+
+        return await fetch("/api/proxy", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: proxyBody
+        });
+    }
+
     // Real scan implementation using fetch
     async function runSQLiScan(config, outputEl, progressEl, fillEl, textEl) {
         const { url, method, postData, level, customPayloads } = config;
@@ -180,7 +196,7 @@ const ScannerModule = (() => {
         let baseline;
         try {
             const start = Date.now();
-            const resp = await fetch(url, { method });
+            const resp = await proxyFetch(url, { method });
             const text = await resp.text();
             baseline = { status: resp.status, length: text.length, time: Date.now() - start };
             addLine(outputEl, "system", "[BASE]", `Status: ${baseline.status} | Length: ${baseline.length} chars`);
@@ -208,7 +224,7 @@ const ScannerModule = (() => {
                 if (method === "POST") options.body = injectPayload(postData, payload);
 
                 const start = Date.now();
-                const resp = await fetch(targetUrl, options);
+                const resp = await proxyFetch(targetUrl, options);
                 const text = await resp.text();
                 const timeTaken = Date.now() - start;
 
@@ -320,7 +336,7 @@ const ScannerModule = (() => {
                 const separator = url.includes("?") ? "&" : "?";
                 const testUrl = `${url}${separator}${param}=${encodeURIComponent(payload)}`;
 
-                const resp = await fetch(testUrl);
+                const resp = await proxyFetch(testUrl);
                 const text = await resp.text();
 
                 // Detection logic: Check for reflection

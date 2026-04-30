@@ -6,6 +6,37 @@ const port = process.env.PORT || 3000;
 // Serve static files from the current directory
 app.use(express.static(path.join(__dirname)));
 
+app.use(express.json());
+
+// Proxy endpoint to bypass CORS
+app.post('/api/proxy', async (req, res) => {
+    try {
+        const { url, method, headers, body } = req.body;
+
+        if (!url) {
+            return res.status(400).json({ error: "Missing url parameter" });
+        }
+
+        const options = {
+            method: method || 'GET',
+            headers: headers || {},
+        };
+
+        if (body && (method === 'POST' || method === 'PUT')) {
+            options.body = body;
+        }
+
+        const fetch = (await import('node-fetch')).default || globalThis.fetch;
+        const targetResp = await fetch(url, options);
+        const targetBody = await targetResp.text();
+
+        res.status(targetResp.status).send(targetBody);
+    } catch (error) {
+        console.error("Proxy Error:", error);
+        res.status(502).json({ error: "Proxy Error: " + error.message });
+    }
+});
+
 // Fallback to index.html
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
